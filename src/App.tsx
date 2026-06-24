@@ -17,6 +17,7 @@ import DashCalendar from "@/pages/dashboard/Calendar";
 import DashBookings from "@/pages/dashboard/Bookings";
 import DashAvailability from "@/pages/dashboard/Availability";
 import DashNotifications from "@/pages/dashboard/Notifications";
+import DashMessages from "@/pages/dashboard/Messages";
 import DashProfile from "@/pages/dashboard/Profile";
 import DashAnalytics from "@/pages/dashboard/Analytics";
 import DashSettings from "@/pages/dashboard/Settings";
@@ -46,6 +47,7 @@ export default function App() {
               <Route path="calendar" element={<DashCalendar />} />
               <Route path="bookings" element={<DashBookings />} />
               <Route path="availability" element={<DashAvailability />} />
+              <Route path="messages" element={<DashMessages />} />
               <Route path="notifications" element={<DashNotifications />} />
               <Route path="profile" element={<DashProfile />} />
               <Route path="analytics" element={<DashAnalytics />} />

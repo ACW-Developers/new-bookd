@@ -24,6 +24,7 @@ export default function Auth() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [profession, setProfession] = useState("");
+  const [category, setCategory] = useState("");
   const [isPro, setIsPro] = useState(true);
 
   const redirectFor = async (userId: string) => {
@@ -58,7 +59,7 @@ export default function Auth() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { full_name: fullName, phone, profession, is_professional: isPro },
+            data: { full_name: fullName, phone, profession, category, is_professional: isPro },
           },
         });
         if (error) throw error;
@@ -141,6 +142,9 @@ export default function Auth() {
                       </FieldI>
                     </div>
                   </div>
+                  <FieldI label="Category" icon={Briefcase}>
+                    <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Photography, Coaching, Legal…" />
+                  </FieldI>
                   <label className="flex items-center gap-2 text-sm text-muted-foreground">
                     <input type="checkbox" className="accent-primary" checked={isPro} onChange={(e) => setIsPro(e.target.checked)} />
                     I'm offering services as a professional
