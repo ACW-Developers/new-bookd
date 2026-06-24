@@ -76,13 +76,13 @@ export default function Auth() {
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden lg:block">
         <img src={authHero} alt="Professional" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-navy/80 via-primary/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-navy/30 via-primary/40 to-transparent" />
         <div className="absolute inset-0 flex flex-col justify-between p-12 text-white">
           <Logo className="[&_span]:text-white" />
           <div className="max-w-md">
             <h1 className="text-4xl font-bold leading-tight">Connect with Trusted Professionals</h1>
             <p className="mt-3 text-white/85">
-              Discover availability, request bookings, and manage engagements — all from one beautifully simple platform.
+              Discover availability, request bookings, and manage engagements, all from one beautifully simple platform.
             </p>
           </div>
         </div>
@@ -90,11 +90,13 @@ export default function Auth() {
 
       <div className="flex items-center justify-center bg-background p-6 sm:p-12">
         <div className="w-full max-w-md">
-          <div className="rounded-3xl border border-border bg-card p-8 shadow-[var(--shadow-elegant)]">
+          <div className="rounded-3xl border-2 border-primary/40 bg-card p-8 shadow-[var(--shadow-elegant)]">
             <div className="flex flex-col items-center text-center">
               <div className="grid h-14 w-14 place-items-center rounded-2xl gradient-primary text-2xl font-bold text-primary-foreground shadow-[var(--shadow-glow)]">B</div>
-              <h2 className="mt-4 text-2xl font-bold tracking-tight">BOOKD<span className="text-primary">.</span></h2>
-              <p className="text-sm text-muted-foreground">Professional Booking Platform</p>
+              <h2 className="mt-3 text-2xl font-bold tracking-tight">
+                <Logo className="[&_span]:text-white" />
+              </h2>
+              <p className="text-sm mt-1 text-muted-foreground">Professional Booking Platform</p>
             </div>
 
             <div className="mt-6 grid grid-cols-2 rounded-xl bg-muted p-1">
@@ -116,14 +118,29 @@ export default function Auth() {
               {tab === "signup" && (
                 <>
                   <FieldI label="Full name" icon={User}>
-                    <Input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Cooper" />
+                    <Input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" />
                   </FieldI>
-                  <FieldI label="Phone" icon={Phone}>
-                    <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 555 0100" />
-                  </FieldI>
-                  <FieldI label="Profession" icon={Briefcase}>
-                    <Input value={profession} onChange={(e) => setProfession(e.target.value)} placeholder="Photographer, consultant…" />
-                  </FieldI>
+                  <div className="flex gap-4">
+                    <div className="flex-1">
+                      <FieldI label="Phone" icon={Phone}>
+                        <Input
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          placeholder="0700 000 000"
+                        />
+                      </FieldI>
+                    </div>
+
+                    <div className="flex-1">
+                      <FieldI label="Profession" icon={Briefcase}>
+                        <Input
+                          value={profession}
+                          onChange={(e) => setProfession(e.target.value)}
+                          placeholder="E.g., Consultant…"
+                        />
+                      </FieldI>
+                    </div>
+                  </div>
                   <label className="flex items-center gap-2 text-sm text-muted-foreground">
                     <input type="checkbox" className="accent-primary" checked={isPro} onChange={(e) => setIsPro(e.target.checked)} />
                     I'm offering services as a professional
@@ -131,7 +148,7 @@ export default function Auth() {
                 </>
               )}
               <FieldI label="Email" icon={Mail}>
-                <Input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
+                <Input required type="email" className="border-2 border-primary/30 pr-9" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@company.com" />
               </FieldI>
               <FieldI label="Password" icon={Lock}>
                 <div className="relative">
@@ -142,7 +159,7 @@ export default function Auth() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="pr-9"
+                    className="border-2 border-primary/30 pr-9"
                   />
                   <button type="button" onClick={() => setShowPw((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground">
                     {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}

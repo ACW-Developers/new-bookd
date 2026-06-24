@@ -23,14 +23,11 @@ export default function Landing() {
         </div>
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-2 lg:py-28">
           <div className="flex flex-col justify-center">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-              <Sparkles className="h-3.5 w-3.5" /> Trusted professionals, real-time availability
-            </span>
             <h1 className="mt-5 text-4xl font-bold leading-[1.1] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
               Book Trusted <span className="text-gradient">Professionals</span> for Any Event, Service, or Engagement
             </h1>
             <p className="mt-5 max-w-xl text-lg text-muted-foreground">
-              Discover availability, request bookings, and manage professional engagements effortlessly — all from one beautifully simple platform.
+              Discover availability, request bookings, and manage professional engagements effortlessly - all from one beautifully simple platform.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="gradient-primary shadow-[var(--shadow-elegant)]">
