@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "./logo";
 import { useAuth } from "@/hooks/use-auth";
 import { LogIn, UserPlus } from "lucide-react";
+import { UserMenu } from "@/components/user-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteNav() {
-  const { session, profile, user } = useAuth();
+  const { session } = useAuth();
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
@@ -16,45 +18,38 @@ export function SiteNav() {
           <a href="/#how" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">How it works</a>
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {session ? (
-            <Button asChild size="sm" className="gap-2">
-              <Link to="/dashboard">
-                <img
-                  src={profile?.avatar_url ?? `https://i.pravatar.cc/60?u=${user?.id}`}
-                  alt=""
-                  className="h-5 w-5 rounded-full object-cover"
-                />
-                Dashboard
-              </Link>
-            </Button>
+            <>
+              <Button asChild size="sm" variant="outline">
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+              <UserMenu />
+            </>
           ) : (
             <>
-
-            <Button
-              asChild
-              variant="ghost"
-              size="sm"
-              className="hidden border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground sm:inline-flex"
-            >
-              <Link to="/auth" className="flex items-center gap-2">
-                <LogIn className="w-4 h-4" />
-                Log in
-              </Link>
-            </Button>
-
-            <Button asChild size="sm">
-              <Link to="/auth?tab=signup" className="flex items-center gap-2">
-                <UserPlus className="w-4 h-4" />
-                Register
-              </Link>
-            </Button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </header>
-              );
-            }
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="hidden border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground sm:inline-flex"
+              >
+                <Link to="/auth" className="flex items-center gap-2">
+                  <LogIn className="w-4 h-4" /> Log in
+                </Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link to="/auth?tab=signup" className="flex items-center gap-2">
+                  <UserPlus className="w-4 h-4" /> Register
+                </Link>
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
 
 export function SiteFooter() {
   return (

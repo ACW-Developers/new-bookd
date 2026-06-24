@@ -1,16 +1,19 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, Calendar, ListChecks, Clock, Bell, User, BarChart3, Settings, LogOut, Search, ShieldCheck } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { LayoutDashboard, Calendar, ListChecks, Clock, Bell, User, BarChart3, Settings, Search, ShieldCheck, MessageSquare } from "lucide-react";
 import { Logo } from "./logo";
 import { Input } from "./ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { UserMenu } from "@/components/user-menu";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const baseItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/dashboard/calendar", label: "Calendar", icon: Calendar },
   { to: "/dashboard/bookings", label: "Bookings", icon: ListChecks },
   { to: "/dashboard/availability", label: "Availability", icon: Clock },
+  { to: "/dashboard/messages", label: "Messages", icon: MessageSquare },
   { to: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { to: "/dashboard/profile", label: "Profile", icon: User },
   { to: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
@@ -19,8 +22,7 @@ const baseItems: { to: string; label: string; icon: typeof LayoutDashboard; exac
 
 export function DashboardShell({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle?: string }) {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
-  const { profile, user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin } = useAuth();
 
   const { data: unread = 0 } = useQuery({
     queryKey: ["unread-count", user?.id],
@@ -33,14 +35,10 @@ export function DashboardShell({ children, title, subtitle }: { children: React.
         .eq("read", false);
       return count ?? 0;
     },
+    refetchInterval: 30_000,
   });
 
   const items = isAdmin ? [...baseItems, { to: "/admin", label: "Admin", icon: ShieldCheck }] : baseItems;
-
-  const onLogout = async () => {
-    await signOut();
-    navigate("/");
-  };
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -63,11 +61,6 @@ export function DashboardShell({ children, title, subtitle }: { children: React.
               );
             })}
           </nav>
-          <div className="border-t border-sidebar-border p-3">
-            <button onClick={onLogout} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-sidebar-accent">
-              <LogOut className="h-4 w-4" /> Logout
-            </button>
-          </div>
         </aside>
 
         <div className="min-w-0 flex-1">
@@ -78,21 +71,16 @@ export function DashboardShell({ children, title, subtitle }: { children: React.
               <Input placeholder="Search bookings, clients, events…" className="h-10 border-0 bg-muted pl-9 shadow-none focus-visible:ring-1" />
             </div>
             <div className="ml-auto flex items-center gap-3">
-              <Link to="/dashboard/notifications" className="relative rounded-full border border-border bg-card p-2 hover:bg-accent">
+              <ThemeToggle />
+              <Link to="/dashboard/notifications" className="relative rounded-full border border-border bg-card p-2 hover:bg-accent" aria-label="Notifications">
                 <Bell className="h-4 w-4" />
-                {unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-destructive" />}
+                {unread > 0 && (
+                  <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
               </Link>
-              <div className="flex items-center gap-2">
-                <img
-                  src={profile?.avatar_url ?? `https://i.pravatar.cc/100?u=${user?.id ?? "me"}`}
-                  alt={profile?.full_name ?? "Me"}
-                  className="h-9 w-9 rounded-full object-cover ring-2 ring-primary/20"
-                />
-                <div className="hidden text-sm sm:block">
-                  <p className="font-medium leading-tight">{profile?.full_name ?? user?.email}</p>
-                  <p className="text-xs text-muted-foreground">{isAdmin ? "Admin" : profile?.is_professional ? "Professional" : "Client"}</p>
-                </div>
-              </div>
+              <UserMenu />
             </div>
           </header>
 
