@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { CURRENCY_SYMBOL } from "@/lib/currency";
+import { UserAvatar } from "@/components/user-avatar";
 
 export default function ProfilePage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -101,7 +102,12 @@ export default function ProfilePage() {
       <form className="grid gap-6 lg:grid-cols-3" onSubmit={onSubmit}>
         <div className="rounded-2xl border border-border bg-card p-6 text-center shadow-[var(--shadow-soft)]">
           <button type="button" onClick={onPickFile} disabled={uploading} className="group relative mx-auto block h-28 w-28">
-            <img src={form.avatar_url || `https://i.pravatar.cc/200?u=${user?.id}`} alt="Avatar" className="h-full w-full rounded-2xl object-cover ring-4 ring-primary/20" />
+            <UserAvatar
+              src={form.avatar_url}
+              name={form.full_name || user?.email}
+              seed={user?.id}
+              className="h-full w-full rounded-2xl text-3xl ring-4 ring-primary/20"
+            />
             <span className="absolute inset-0 grid place-items-center rounded-2xl bg-black/40 text-white opacity-0 transition-opacity group-hover:opacity-100">
               {uploading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Camera className="h-5 w-5" />}
             </span>

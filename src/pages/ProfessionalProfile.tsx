@@ -13,6 +13,7 @@ import { api } from "@/services/supabaseQueries";
 import { toast } from "sonner";
 import { formatPrice } from "@/lib/currency";
 import type { Profile } from "@/lib/types";
+import { UserAvatar } from "@/components/user-avatar";
 
 export default function ProfessionalProfile() {
   const { id = "" } = useParams<{ id: string }>();
@@ -61,7 +62,7 @@ export default function ProfessionalProfile() {
           <div className="h-32 gradient-navy" />
           <div className="px-6 pb-6 sm:px-8 sm:pb-8">
             <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end">
-              <img src={p.avatar_url ?? `https://i.pravatar.cc/200?u=${p.id}`} alt={p.full_name} className="h-24 w-24 rounded-2xl object-cover ring-4 ring-card shadow-[var(--shadow-elegant)]" />
+              <UserAvatar src={p.avatar_url} name={p.full_name} seed={p.id} className="h-24 w-24 rounded-2xl text-2xl ring-4 ring-card shadow-[var(--shadow-elegant)]" />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl font-bold tracking-tight">{p.full_name}</h1>

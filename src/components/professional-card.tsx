@@ -3,15 +3,17 @@ import { MapPin, Star, Calendar } from "lucide-react";
 import type { Profile } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/currency";
+import { UserAvatar } from "@/components/user-avatar";
 
 export function ProfessionalCard({ p }: { p: Profile }) {
   return (
     <div className="group relative flex flex-col rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)] transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
       <div className="flex items-start gap-4">
-        <img
-          src={p.avatar_url ?? `https://i.pravatar.cc/200?u=${p.id}`}
-          alt={p.full_name}
-          className="h-16 w-16 shrink-0 rounded-xl object-cover ring-2 ring-primary/10"
+        <UserAvatar
+          src={p.avatar_url}
+          name={p.full_name}
+          seed={p.id}
+          className="h-16 w-16 shrink-0 rounded-xl text-lg ring-2 ring-primary/10"
         />
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold text-foreground">{p.full_name}</h3>
