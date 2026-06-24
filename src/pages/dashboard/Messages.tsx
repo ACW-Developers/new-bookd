@@ -64,13 +64,14 @@ export default function MessagesPage() {
     queryKey: ["dm-thread", user?.id, partnerId],
     enabled: !!user && !!partnerId,
     queryFn: async () => {
+      const pid = partnerId!;
       const { data } = await supabase
         .from("messages")
         .select("*")
-        .or(`and(sender_id.eq.${user!.id},recipient_id.eq.${partnerId}),and(sender_id.eq.${partnerId},recipient_id.eq.${user!.id})`)
+        .or(`and(sender_id.eq.${user!.id},recipient_id.eq.${pid}),and(sender_id.eq.${pid},recipient_id.eq.${user!.id})`)
         .order("created_at", { ascending: true });
       // Mark received messages as read
-      await supabase.from("messages").update({ read: true }).eq("recipient_id", user!.id).eq("sender_id", partnerId).eq("read", false);
+      await supabase.from("messages").update({ read: true }).eq("recipient_id", user!.id).eq("sender_id", pid).eq("read", false);
       qc.invalidateQueries({ queryKey: ["dm-convos"] });
       return data ?? [];
     },
