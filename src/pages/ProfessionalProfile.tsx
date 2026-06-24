@@ -65,11 +65,11 @@ export default function ProfessionalProfile() {
               <UserAvatar src={p.avatar_url} name={p.full_name} seed={p.id} className="h-24 w-24 rounded-2xl text-2xl ring-4 ring-card shadow-[var(--shadow-elegant)]" />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-bold tracking-tight">{p.full_name}</h1>
+                  <h1 className="text-2xl lg:text-white font-bold tracking-tight">{p.full_name}</h1>
                   <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success"><CheckCircle2 className="h-3 w-3" /> Verified</span>
                 </div>
-                <p className="text-muted-foreground">{p.profession ?? "Professional"}{p.category ? ` · ${p.category}` : ""}</p>
-                <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <p className="text-muted-foreground ">{p.profession ?? "Professional"}{p.category ? ` · ${p.category}` : ""}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                   {p.location && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {p.location}</span>}
                   <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-warning text-warning" /> {Number(p.rating).toFixed(1)} ({p.reviews_count} reviews)</span>
                   {p.experience_years && <span className="flex items-center gap-1"><Briefcase className="h-4 w-4" /> {p.experience_years} years</span>}
@@ -121,7 +121,7 @@ export default function ProfessionalProfile() {
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Clock className="h-5 w-5 text-primary" /> Currently unavailable</h2>
               {busy.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No upcoming engagements — fully open for new bookings.</p>
+                <p className="text-sm text-muted-foreground">No upcoming engagements - fully open for new bookings.</p>
               ) : (
                 <ul className="space-y-2">
                   {busy.map((b, i) => (

@@ -61,7 +61,7 @@ export default function SearchPage() {
           <div className="rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-soft)]">
             <h3 className="mb-3 text-sm font-semibold">Minimum rating</h3>
             <div className="flex gap-1">
-              {[0, 3, 4, 4.5, 5].map((r) => (
+              {[0, 3, 4, 5].map((r) => (
                 <button key={r} onClick={() => setMinRating(r)} className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs ${minRating === r ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground hover:bg-accent"}`}>
                   <Star className="h-3 w-3 fill-current" /> {r === 0 ? "Any" : `${r}+`}
                 </button>
