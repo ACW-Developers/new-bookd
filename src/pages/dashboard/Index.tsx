@@ -1,14 +1,22 @@
 import { Link } from "react-router-dom";
-import { Calendar, CheckCircle2, Clock, TrendingUp, MapPin, ArrowUpRight } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, TrendingUp, MapPin, ArrowUpRight, Search as SearchIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
+import { ProfessionalCard } from "@/components/professional-card";
+import { CategoriesCarousel } from "@/components/categories-carousel";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { api } from "@/services/supabaseQueries";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 
 export default function DashboardHome() {
   const { user, profile, isProfessional } = useAuth();
+  const { data: featuredPros = [] } = useQuery({
+    queryKey: ["dash-featured-pros"],
+    enabled: !!user && !isProfessional,
+    queryFn: api.featuredPros,
+  });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ["my-bookings", user?.id],
