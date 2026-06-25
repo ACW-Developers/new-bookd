@@ -15,7 +15,7 @@ type Partner = { id: string; full_name: string; avatar_url: string | null };
 export default function MessagesPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [params, setParams] = useSearchParams();
+  const [params] = useSearchParams();
   const [partnerId, setPartnerId] = useState<string | null>(params.get("partner"));
   const [draft, setDraft] = useState("");
   const [search, setSearch] = useState("");
