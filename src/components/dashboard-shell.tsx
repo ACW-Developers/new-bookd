@@ -38,7 +38,25 @@ export function DashboardShell({ children, title, subtitle }: { children: React.
     refetchInterval: 30_000,
   });
 
-  const items = isAdmin ? [...baseItems, { to: "/admin", label: "Admin", icon: ShieldCheck }] : baseItems;
+  const { data: unreadMsgs = 0 } = useQuery({
+    queryKey: ["unread-msgs", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { count } = await supabase
+        .from("messages")
+        .select("id", { count: "exact", head: true })
+        .eq("recipient_id", user!.id)
+        .eq("read", false);
+      return count ?? 0;
+    },
+    refetchInterval: 20_000,
+  });
+
+  const itemsWithBadges = baseItems.map((it) => ({
+    ...it,
+    badge: it.to === "/dashboard/messages" ? unreadMsgs : it.to === "/dashboard/notifications" ? unread : 0,
+  }));
+  const items = isAdmin ? [...itemsWithBadges, { to: "/admin", label: "Admin", icon: ShieldCheck, badge: 0 }] : itemsWithBadges;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -56,7 +74,12 @@ export function DashboardShell({ children, title, subtitle }: { children: React.
                     active ? "gradient-primary text-primary-foreground shadow-[var(--shadow-soft)]" : "text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                   }`}
                 >
-                  <it.icon className="h-4 w-4" /> {it.label}
+                  <it.icon className="h-4 w-4" /> <span className="flex-1">{it.label}</span>
+                  {it.badge > 0 && (
+                    <span className={`grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[10px] font-bold ${active ? "bg-white/25 text-white" : "bg-primary text-primary-foreground"}`}>
+                      {it.badge > 9 ? "9+" : it.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

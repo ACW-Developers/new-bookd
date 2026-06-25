@@ -24,7 +24,6 @@ export default function Auth() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [profession, setProfession] = useState("");
-  const [category, setCategory] = useState("");
   const [isPro, setIsPro] = useState(true);
 
   const redirectFor = async (userId: string) => {
@@ -59,7 +58,7 @@ export default function Auth() {
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
-            data: { full_name: fullName, phone, profession, category, is_professional: isPro },
+            data: { full_name: fullName, phone, profession, is_professional: isPro },
           },
         });
         if (error) throw error;
@@ -118,37 +117,27 @@ export default function Auth() {
             <form className="mt-6 space-y-4" onSubmit={onSubmit}>
               {tab === "signup" && (
                 <>
+                  <div className="grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">
+                    <button type="button" onClick={() => setIsPro(false)} className={`rounded-lg py-2 text-xs font-semibold transition ${!isPro ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"}`}>I'm a Client</button>
+                    <button type="button" onClick={() => setIsPro(true)} className={`rounded-lg py-2 text-xs font-semibold transition ${isPro ? "bg-card shadow-sm text-foreground" : "text-muted-foreground"}`}>I'm a Professional</button>
+                  </div>
                   <FieldI label="Full name" icon={User}>
                     <Input required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" />
                   </FieldI>
                   <div className="flex gap-4">
                     <div className="flex-1">
                       <FieldI label="Phone" icon={Phone}>
-                        <Input
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="0700 000 000"
-                        />
+                        <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0700 000 000" />
                       </FieldI>
                     </div>
-
-                    <div className="flex-1">
-                      <FieldI label="Profession" icon={Briefcase}>
-                        <Input
-                          value={profession}
-                          onChange={(e) => setProfession(e.target.value)}
-                          placeholder="E.g., Consultant…"
-                        />
-                      </FieldI>
-                    </div>
+                    {isPro && (
+                      <div className="flex-1">
+                        <FieldI label="Profession" icon={Briefcase}>
+                          <Input value={profession} onChange={(e) => setProfession(e.target.value)} placeholder="E.g., Consultant…" />
+                        </FieldI>
+                      </div>
+                    )}
                   </div>
-                  <FieldI label="Category" icon={Briefcase}>
-                    <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="e.g. Photography, Coaching, Legal…" />
-                  </FieldI>
-                  <label className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <input type="checkbox" className="accent-primary" checked={isPro} onChange={(e) => setIsPro(e.target.checked)} />
-                    I'm offering services as a professional
-                  </label>
                 </>
               )}
               <FieldI label="Email" icon={Mail}>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Send, Search, MessageSquare } from "lucide-react";
 import { DashboardShell } from "@/components/dashboard-shell";
@@ -14,10 +15,16 @@ type Partner = { id: string; full_name: string; avatar_url: string | null };
 export default function MessagesPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [partnerId, setPartnerId] = useState<string | null>(null);
+  const [params] = useSearchParams();
+  const [partnerId, setPartnerId] = useState<string | null>(params.get("partner"));
   const [draft, setDraft] = useState("");
   const [search, setSearch] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const p = params.get("partner");
+    if (p && p !== partnerId) setPartnerId(p);
+  }, [params]);
 
   // Existing conversation partners (anyone I've talked to)
   const { data: convos = [] } = useQuery({

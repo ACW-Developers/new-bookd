@@ -1,14 +1,22 @@
 import { Link } from "react-router-dom";
-import { Calendar, CheckCircle2, Clock, TrendingUp, MapPin, ArrowUpRight } from "lucide-react";
+import { Calendar, CheckCircle2, Clock, TrendingUp, MapPin, ArrowUpRight, Search as SearchIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
+import { ProfessionalCard } from "@/components/professional-card";
+import { CategoriesCarousel } from "@/components/categories-carousel";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
+import { api } from "@/services/supabaseQueries";
 import { LineChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 
 export default function DashboardHome() {
   const { user, profile, isProfessional } = useAuth();
+  const { data: featuredPros = [] } = useQuery({
+    queryKey: ["dash-featured-pros"],
+    enabled: !!user && !isProfessional,
+    queryFn: api.featuredPros,
+  });
 
   const { data: bookings = [] } = useQuery({
     queryKey: ["my-bookings", user?.id],
@@ -157,6 +165,36 @@ export default function DashboardHome() {
           </div>
         </div>
       </div>
+
+      {!isProfessional && (
+        <>
+          <section className="mt-10">
+            <div className="mb-4 flex items-end justify-between">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight">Browse by category</h2>
+                <p className="text-sm text-muted-foreground">Pick a category to find the right professional.</p>
+              </div>
+            </div>
+            <CategoriesCarousel />
+          </section>
+
+          <section className="mt-10">
+            <div className="mb-4 flex items-end justify-between">
+              <div>
+                <h2 className="text-xl font-bold tracking-tight">Featured professionals</h2>
+                <p className="text-sm text-muted-foreground">Top-rated and ready to book.</p>
+              </div>
+              <Button asChild variant="ghost" size="sm"><Link to="/search"><SearchIcon className="mr-1 h-3.5 w-3.5" /> See all</Link></Button>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredPros.map((p) => <ProfessionalCard key={p.id} p={p} />)}
+              {featuredPros.length === 0 && (
+                <div className="col-span-full grid place-items-center rounded-2xl border border-dashed border-border py-10 text-sm text-muted-foreground">No professionals available yet.</div>
+              )}
+            </div>
+          </section>
+        </>
+      )}
     </DashboardShell>
   );
 }

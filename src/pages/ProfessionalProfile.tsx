@@ -1,6 +1,6 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { MapPin, Star, Calendar, Mail, Phone, ArrowLeft, CheckCircle2, Briefcase, Clock } from "lucide-react";
+import { MapPin, Star, Calendar, Mail, Phone, ArrowLeft, CheckCircle2, Briefcase, Clock, MessageSquare } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { Button } from "@/components/ui/button";
@@ -143,6 +143,9 @@ export default function ProfessionalProfile() {
               <p className="text-xs uppercase tracking-wide text-muted-foreground">Starting from</p>
               <p className="mt-1 text-3xl font-bold text-navy">{formatPrice(p.hourly_rate)}<span className="text-base font-normal text-muted-foreground">/hr</span></p>
               <BookingDialog pro={p} busy={busy} className="mt-4 w-full" />
+              <Button asChild variant="outline" className="mt-2 w-full">
+                <Link to={`/dashboard/messages?partner=${p.id}`}><MessageSquare className="mr-2 h-4 w-4" /> Start chat</Link>
+              </Button>
               <p className="mt-3 text-center text-xs text-muted-foreground">Usually responds within 2 hours</p>
             </section>
 
@@ -166,6 +169,7 @@ export default function ProfessionalProfile() {
 type BusySlot = { event_date: string; start_time: string; end_time: string; status: string };
 
 function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile; className?: string; busy?: BusySlot[] }) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -210,7 +214,9 @@ function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile;
         link: "/dashboard/bookings",
       });
       setOpen(false);
-      toast.success("Booking request sent!");
+      toast.success("Booking request sent!", {
+        action: { label: "Start chat", onClick: () => navigate(`/dashboard/messages?partner=${pro.id}`) },
+      });
       (e.target as HTMLFormElement).reset();
     } catch (err: any) {
       toast.error(err.message ?? "Could not send request");

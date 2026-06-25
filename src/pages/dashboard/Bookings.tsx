@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Check, X, Clock, MapPin, AlertCircle, CheckCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Check, X, Clock, MapPin, AlertCircle, CheckCheck, Calendar as CalIcon, User as UserIcon, Mail, MessageSquare } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ const tabs: BookingStatus[] = ["pending", "approved", "completed", "cancelled"];
 
 export default function BookingsPage() {
   const { user, isProfessional } = useAuth();
+  const navigate = useNavigate();
   const qc = useQueryClient();
   const [tab, setTab] = useState<BookingStatus>("pending");
 
@@ -37,12 +39,9 @@ export default function BookingsPage() {
       qc.invalidateQueries({ queryKey: ["my-bookings"] });
       qc.invalidateQueries({ queryKey: ["calendar"] });
       qc.invalidateQueries({ queryKey: ["unread-count"] });
-      const msg =
-        v.status === "approved"
-          ? "Approved — you're marked unavailable for that slot."
-          : v.status === "completed"
-            ? "Marked complete — your availability is restored."
-            : `Booking ${v.status}`;
+      const msg = v.status === "approved" ? "Approved — you're marked unavailable for that slot."
+        : v.status === "completed" ? "Marked complete — your availability is restored."
+        : `Booking ${v.status}`;
       toast.success(msg);
     },
     onError: (e: any) => toast.error(e.message),
@@ -51,13 +50,16 @@ export default function BookingsPage() {
   const list = bookings.filter((b) => b.status === tab);
   const pendingCount = bookings.filter((b) => b.status === "pending").length;
 
+  const openChat = (b: any) => {
+    const partnerId = isProfessional ? b.client_id : b.professional_id;
+    if (!partnerId) { toast.error("Chat unavailable — counterpart is a guest."); return; }
+    navigate(`/dashboard/messages?partner=${partnerId}`);
+  };
+
   return (
-    <DashboardShell title="Bookings" subtitle="Review and manage all your booking requests.">
+    <DashboardShell title="Bookings" subtitle="Manage requests, confirmations and past engagements.">
       {isProfessional && pendingCount > 0 && tab !== "pending" && (
-        <button
-          onClick={() => setTab("pending")}
-          className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-left text-sm font-medium text-warning-foreground transition hover:bg-warning/20"
-        >
+        <button onClick={() => setTab("pending")} className="mb-4 flex w-full items-center gap-3 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-left text-sm font-medium text-warning-foreground transition hover:bg-warning/20">
           <AlertCircle className="h-5 w-5 text-warning" />
           <span className="flex-1">You have <strong>{pendingCount}</strong> pending booking{pendingCount > 1 ? "s" : ""} awaiting your response.</span>
           <span className="rounded-full bg-warning px-2 py-0.5 text-xs font-bold text-warning-foreground">Review</span>
@@ -77,49 +79,85 @@ export default function BookingsPage() {
         })}
       </div>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {list.length === 0 && (
           <div className="grid place-items-center rounded-2xl border border-dashed border-border py-16 text-muted-foreground">No {tab} bookings.</div>
         )}
-        {list.map((b) => (
-          <div key={b.id} className={`grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 rounded-2xl border bg-card p-5 shadow-[var(--shadow-soft)] sm:flex sm:items-center sm:justify-between ${b.status === "pending" ? "border-warning/40 ring-1 ring-warning/20" : "border-border"}`}>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="truncate text-base font-semibold">{b.event_name}</p>
-                {b.status === "pending" && <span className="rounded-full bg-warning/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-warning">New</span>}
-                {b.status === "approved" && <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-destructive">Unavailable</span>}
+        {list.map((b) => {
+          const counterpart = isProfessional ? (b.client_name ?? "Client") : "Professional";
+          return (
+            <div key={b.id} className={`rounded-2xl border bg-card p-5 shadow-[var(--shadow-soft)] ${b.status === "pending" ? "border-warning/40 ring-1 ring-warning/20" : "border-border"}`}>
+              {/* Header row */}
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-bold tracking-tight">{b.event_name}</h3>
+                    <StatusPill status={b.status} />
+                    {b.event_type && <span className="rounded-md bg-navy/10 px-2 py-0.5 text-xs font-medium text-navy">{b.event_type}</span>}
+                    {b.status === "approved" && <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-destructive">Unavailable</span>}
+                  </div>
+                  {b.description && <p className="mt-1 text-sm text-muted-foreground">{b.description}</p>}
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  {b.status === "pending" && isProfessional ? (
+                    <>
+                      <Button size="sm" variant="outline" className="border-destructive/40 text-destructive hover:bg-destructive/10" onClick={() => updateStatus.mutate({ id: b.id, status: "cancelled" })}>
+                        <X className="mr-1 h-4 w-4" /> Decline
+                      </Button>
+                      <Button size="sm" className="bg-success text-white hover:bg-success/90" onClick={() => updateStatus.mutate({ id: b.id, status: "approved" })}>
+                        <Check className="mr-1 h-4 w-4" /> Accept
+                      </Button>
+                    </>
+                  ) : b.status === "approved" && isProfessional ? (
+                    <>
+                      <Button size="sm" variant="outline" onClick={() => updateStatus.mutate({ id: b.id, status: "cancelled" })}>Cancel</Button>
+                      <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => updateStatus.mutate({ id: b.id, status: "completed" })}>
+                        <CheckCheck className="mr-1 h-3.5 w-3.5" /> Mark complete
+                      </Button>
+                    </>
+                  ) : null}
+                  <Button size="sm" variant="outline" onClick={() => openChat(b)}>
+                    <MessageSquare className="mr-1 h-4 w-4" /> Chat
+                  </Button>
+                </div>
               </div>
-              <p className="truncate text-sm text-muted-foreground">{b.client_name}{b.company ? ` · ${b.company}` : ""}</p>
-              <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {b.event_date} · {b.start_time.slice(0, 5)}–{b.end_time.slice(0, 5)}</span>
-                {b.location && <span className="flex items-center gap-1"><MapPin className="h-3 w-3" /> {b.location}</span>}
+
+              {/* Info grid */}
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <InfoTile icon={CalIcon} label="Date" value={new Date(b.event_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} />
+                <InfoTile icon={Clock} label="Time" value={`${b.start_time.slice(0,5)} – ${b.end_time.slice(0,5)}`} />
+                <InfoTile icon={MapPin} label="Location" value={b.location || "—"} />
+                <InfoTile icon={UserIcon} label="Client" value={counterpart} />
               </div>
-              {b.description && <p className="mt-2 text-sm text-muted-foreground">"{b.description}"</p>}
+
+              {b.client_email && (
+                <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <Mail className="h-3.5 w-3.5" />
+                  <a href={`mailto:${b.client_email}`} className="hover:text-foreground">{b.client_email}</a>
+                </p>
+              )}
             </div>
-            <div className="flex shrink-0 gap-2">
-              {b.status === "pending" && isProfessional ? (
-                <>
-                  <Button size="sm" className="bg-success hover:bg-success/90" onClick={() => updateStatus.mutate({ id: b.id, status: "approved" })}>
-                    <Check className="mr-1 h-3.5 w-3.5" /> Approve
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => updateStatus.mutate({ id: b.id, status: "declined" })}>
-                    <X className="mr-1 h-3.5 w-3.5" /> Decline
-                  </Button>
-                </>
-              ) : b.status === "approved" && isProfessional ? (
-                <>
-                  <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => updateStatus.mutate({ id: b.id, status: "completed" })}>
-                    <CheckCheck className="mr-1 h-3.5 w-3.5" /> Mark complete
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={() => updateStatus.mutate({ id: b.id, status: "cancelled" })}>
-                    Cancel
-                  </Button>
-                </>
-              ) : null}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </DashboardShell>
+  );
+}
+
+function StatusPill({ status }: { status: string }) {
+  const cls =
+    status === "approved" ? "bg-success/15 text-success" :
+    status === "pending" ? "bg-warning/15 text-warning" :
+    status === "completed" ? "bg-primary/15 text-primary" :
+    "bg-destructive/15 text-destructive";
+  return <span className={`rounded-md px-2 py-0.5 text-xs font-semibold capitalize ${cls}`}>{status}</span>;
+}
+
+function InfoTile({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <div>
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground"><Icon className="h-3.5 w-3.5" /> {label}</p>
+      <p className="mt-1 text-sm font-semibold">{value}</p>
+    </div>
   );
 }

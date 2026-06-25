@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { ProfessionalCard } from "@/components/professional-card";
+import { CategoriesCarousel } from "@/components/categories-carousel";
 import { api } from "@/services/supabaseQueries";
 import heroImage from "@/assets/landing-hero.jpg";
 
 export default function Landing() {
   const { data: featured = [] } = useQuery({ queryKey: ["featured-pros"], queryFn: api.featuredPros });
-  const { data: categories = [] } = useQuery({ queryKey: ["categories"], queryFn: api.categories });
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,16 +90,7 @@ export default function Landing() {
           </div>
           <Link to="/search" className="hidden text-sm font-medium text-primary hover:underline sm:inline">See all →</Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {categories.map((c) => (
-            <Link key={c.id} to="/search" className="group rounded-2xl border border-border bg-card p-5 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-soft)]">
-              <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:gradient-primary group-hover:text-primary-foreground">
-                <Users className="h-5 w-5" />
-              </div>
-              <p className="text-sm font-medium">{c.name}</p>
-            </Link>
-          ))}
-        </div>
+        <CategoriesCarousel />
       </section>
 
       <section className="bg-card/30 py-20">
