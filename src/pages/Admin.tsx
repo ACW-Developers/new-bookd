@@ -1,17 +1,19 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { Users, Briefcase, Calendar, BarChart3, ShieldCheck, Activity, Trash2, Search } from "lucide-react";
+import { Users, Briefcase, Calendar, BarChart3, ShieldCheck, Activity, Trash2, Search, Tag, Plus, Pencil } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DashboardShell } from "@/components/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { BarChart, Bar, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianGrid, LineChart, Line } from "recharts";
 import { toast } from "sonner";
 import { UserAvatar } from "@/components/user-avatar";
 
-type AdminTab = "overview" | "users" | "activity" | "bookings";
+type AdminTab = "overview" | "users" | "categories" | "activity" | "bookings";
 
 export default function Admin() {
   const { loading, isAdmin, user } = useAuth();
@@ -80,6 +82,7 @@ export default function Admin() {
       <div className="mb-5 flex flex-wrap gap-1 rounded-xl border border-border bg-card p-1 shadow-[var(--shadow-soft)]">
         <TabBtn id="overview" icon={BarChart3}>Overview</TabBtn>
         <TabBtn id="users" icon={Users}>Users</TabBtn>
+        <TabBtn id="categories" icon={Tag}>Categories</TabBtn>
         <TabBtn id="activity" icon={Activity}>Activity Logs</TabBtn>
         <TabBtn id="bookings" icon={Calendar}>Bookings</TabBtn>
       </div>
@@ -150,9 +153,106 @@ export default function Admin() {
       )}
 
       {tab === "users" && <UsersTab meId={user?.id} />}
+      {tab === "categories" && <CategoriesTab />}
       {tab === "activity" && <ActivityTab />}
       {tab === "bookings" && <BookingsTab />}
     </DashboardShell>
+  );
+}
+
+/* ---------- CATEGORIES ---------- */
+function CategoriesTab() {
+  const qc = useQueryClient();
+  const [editing, setEditing] = useState<null | { id?: string; name: string; image_url: string; slug?: string }>(null);
+
+  const { data: cats = [] } = useQuery({
+    queryKey: ["admin-categories"],
+    queryFn: async () => {
+      const [{ data: c }, { data: pros }] = await Promise.all([
+        supabase.from("categories").select("*").order("name"),
+        supabase.from("profiles").select("category").eq("is_professional", true),
+      ]);
+      const counts = new Map<string, number>();
+      for (const p of pros ?? []) {
+        const k = (p as any).category?.toLowerCase().trim();
+        if (k) counts.set(k, (counts.get(k) ?? 0) + 1);
+      }
+      return (c ?? []).map((cat: any) => ({ ...cat, count: counts.get(cat.name.toLowerCase()) ?? 0 }));
+    },
+  });
+
+  const save = useMutation({
+    mutationFn: async (v: { id?: string; name: string; image_url: string }) => {
+      const slug = v.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      if (v.id) {
+        const { error } = await supabase.from("categories").update({ name: v.name, image_url: v.image_url, slug }).eq("id", v.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("categories").insert({ name: v.name, image_url: v.image_url, slug });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-categories"] }); qc.invalidateQueries({ queryKey: ["categories-cards"] }); qc.invalidateQueries({ queryKey: ["categories"] }); setEditing(null); toast.success("Saved"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: async (id: string) => { const { error } = await supabase.from("categories").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["admin-categories"] }); qc.invalidateQueries({ queryKey: ["categories-cards"] }); toast.success("Deleted"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">Categories ({cats.length})</h2>
+        <Button size="sm" className="gradient-primary" onClick={() => setEditing({ name: "", image_url: "" })}>
+          <Plus className="mr-1 h-4 w-4" /> New category
+        </Button>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {cats.map((c: any) => (
+          <div key={c.id} className="overflow-hidden rounded-2xl border border-border bg-background shadow-[var(--shadow-soft)]">
+            <div className="h-28 w-full bg-muted">
+              {c.image_url ? <img src={c.image_url} alt={c.name} className="h-full w-full object-cover" /> : null}
+            </div>
+            <div className="flex items-center justify-between p-3">
+              <div>
+                <p className="text-sm font-semibold">{c.name}</p>
+                <p className="text-xs text-muted-foreground">{c.count} pros</p>
+              </div>
+              <div className="flex gap-1">
+                <Button size="sm" variant="ghost" onClick={() => setEditing({ id: c.id, name: c.name, image_url: c.image_url ?? "", slug: c.slug })}><Pencil className="h-3.5 w-3.5" /></Button>
+                <Button size="sm" variant="ghost" className="text-destructive" onClick={() => { if (confirm(`Delete "${c.name}"?`)) remove.mutate(c.id); }}><Trash2 className="h-3.5 w-3.5" /></Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>{editing?.id ? "Edit" : "New"} category</DialogTitle></DialogHeader>
+          {editing && (
+            <div className="space-y-4">
+              <div>
+                <Label className="mb-1.5 block text-sm">Name</Label>
+                <Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} placeholder="e.g. Photography" />
+              </div>
+              <div>
+                <Label className="mb-1.5 block text-sm">Image URL</Label>
+                <Input value={editing.image_url} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} placeholder="https://…" />
+                {editing.image_url && <img src={editing.image_url} alt="" className="mt-2 h-24 w-full rounded-lg object-cover" />}
+              </div>
+              <DialogFooter>
+                <Button variant="ghost" onClick={() => setEditing(null)}>Cancel</Button>
+                <Button className="gradient-primary" disabled={!editing.name.trim()} onClick={() => save.mutate({ id: editing.id, name: editing.name.trim(), image_url: editing.image_url.trim() })}>Save</Button>
+              </DialogFooter>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
