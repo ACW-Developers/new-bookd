@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, Calendar, ListChecks, Clock, Bell, User, BarChart3, Settings, Search, ShieldCheck, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Calendar, ListChecks, Clock, Bell, User, BarChart3, Settings, Search, ShieldCheck, MessageSquare, CalendarDays, Compass } from "lucide-react";
 import { Logo } from "./logo";
 import { Input } from "./ui/input";
 import { useAuth } from "@/hooks/use-auth";
@@ -8,11 +8,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserMenu } from "@/components/user-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-const baseItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
+const proItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/dashboard/calendar", label: "Calendar", icon: Calendar },
   { to: "/dashboard/bookings", label: "Bookings", icon: ListChecks },
   { to: "/dashboard/availability", label: "Availability", icon: Clock },
+  { to: "/dashboard/schedule", label: "Schedule", icon: CalendarDays },
   { to: "/dashboard/messages", label: "Messages", icon: MessageSquare },
   { to: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { to: "/dashboard/profile", label: "Profile", icon: User },
@@ -20,9 +21,20 @@ const baseItems: { to: string; label: string; icon: typeof LayoutDashboard; exac
   { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
+const clientItems: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
+  { to: "/dashboard", label: "Home", icon: LayoutDashboard, exact: true },
+  { to: "/dashboard/discover", label: "Discover", icon: Compass },
+  { to: "/dashboard/bookings", label: "My Bookings", icon: ListChecks },
+  { to: "/dashboard/messages", label: "Messages", icon: MessageSquare },
+  { to: "/dashboard/notifications", label: "Notifications", icon: Bell },
+  { to: "/dashboard/profile", label: "Profile", icon: User },
+  { to: "/dashboard/settings", label: "Settings", icon: Settings },
+];
+
 export function DashboardShell({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle?: string }) {
   const { pathname } = useLocation();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isProfessional } = useAuth();
+  const baseItems = isProfessional ? proItems : clientItems;
 
   const { data: unread = 0 } = useQuery({
     queryKey: ["unread-count", user?.id],
