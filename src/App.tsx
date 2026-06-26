@@ -13,16 +13,34 @@ import NotFound from "@/pages/NotFound";
 import Admin from "@/pages/Admin";
 
 import DashboardHome from "@/pages/dashboard/Index";
+import ClientHome from "@/pages/dashboard/ClientHome";
 import DashCalendar from "@/pages/dashboard/Calendar";
 import DashBookings from "@/pages/dashboard/Bookings";
 import DashAvailability from "@/pages/dashboard/Availability";
+import DashSchedule from "@/pages/dashboard/Schedule";
 import DashNotifications from "@/pages/dashboard/Notifications";
 import DashMessages from "@/pages/dashboard/Messages";
 import DashProfile from "@/pages/dashboard/Profile";
 import DashAnalytics from "@/pages/dashboard/Analytics";
 import DashSettings from "@/pages/dashboard/Settings";
+import DashDiscover from "@/pages/dashboard/Discover";
+import { useAuth } from "@/hooks/use-auth";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
+
+function DashboardHomeRouter() {
+  const { isProfessional } = useAuth();
+  return isProfessional ? <DashboardHome /> : <ClientHome />;
+}
 
 export default function App() {
   return (
@@ -43,10 +61,12 @@ export default function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<DashboardHome />} />
+              <Route index element={<DashboardHomeRouter />} />
+              <Route path="discover" element={<DashDiscover />} />
               <Route path="calendar" element={<DashCalendar />} />
               <Route path="bookings" element={<DashBookings />} />
               <Route path="availability" element={<DashAvailability />} />
+              <Route path="schedule" element={<DashSchedule />} />
               <Route path="messages" element={<DashMessages />} />
               <Route path="notifications" element={<DashNotifications />} />
               <Route path="profile" element={<DashProfile />} />
