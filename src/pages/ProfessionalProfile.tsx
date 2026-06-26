@@ -1,6 +1,6 @@
-import { Link, useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { MapPin, Star, Calendar, Mail, Phone, ArrowLeft, CheckCircle2, Briefcase, Clock, MessageSquare } from "lucide-react";
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { MapPin, Star, Calendar, Mail, Phone, ArrowLeft, CheckCircle2, Briefcase, Clock, MessageSquare, Repeat } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { formatPrice } from "@/lib/currency";
 import type { Profile } from "@/lib/types";
 import { UserAvatar } from "@/components/user-avatar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ProfessionalProfile() {
   const { id = "" } = useParams<{ id: string }>();
