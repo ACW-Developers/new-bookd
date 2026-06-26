@@ -33,7 +33,8 @@ const clientItems: { to: string; label: string; icon: typeof LayoutDashboard; ex
 
 export function DashboardShell({ children, title, subtitle }: { children: React.ReactNode; title: string; subtitle?: string }) {
   const { pathname } = useLocation();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, isProfessional } = useAuth();
+  const baseItems = isProfessional ? proItems : clientItems;
 
   const { data: unread = 0 } = useQuery({
     queryKey: ["unread-count", user?.id],
