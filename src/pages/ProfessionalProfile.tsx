@@ -167,16 +167,17 @@ export default function ProfessionalProfile() {
 
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Clock className="h-5 w-5 text-primary" /> Currently unavailable</h2>
-              {busy.length === 0 ? (
+              {allBusy.length === 0 ? (
                 <p className="text-sm text-black">No upcoming engagements - fully open for new bookings.</p>
               ) : (
                 <ul className="space-y-2">
-                  {busy.map((b, i) => (
-                    <li key={i} className="flex items-center justify-between rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
+                  {allBusy.slice(0, 20).map((b, i) => (
+                    <li key={i} className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
                       <span className="font-medium">{new Date(b.event_date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span>
                       <span className="text-black">{b.start_time.slice(0,5)}–{b.end_time.slice(0,5)}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${b.status === "approved" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
-                        {b.status === "approved" ? "Booked" : "Pending"}
+                      <span className="truncate text-xs text-muted-foreground">{(b as any).label}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${b.status === "approved" ? "bg-destructive/15 text-destructive" : b.status === "schedule" ? "bg-primary/15 text-primary" : "bg-warning/15 text-warning"}`}>
+                        {b.status === "approved" ? "Booked" : b.status === "schedule" ? "Busy" : "Pending"}
                       </span>
                     </li>
                   ))}
