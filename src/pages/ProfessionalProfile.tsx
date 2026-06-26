@@ -218,14 +218,36 @@ type BusySlot = { event_date: string; start_time: string; end_time: string; stat
 
 function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile; className?: string; busy?: BusySlot[] }) {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const [params, setParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  // Auto-open after auth redirect
+  useEffect(() => {
+    if (params.get("book") === "1" && user) {
+      setOpen(true);
+      const next = new URLSearchParams(params);
+      next.delete("book");
+      setParams(next, { replace: true });
+    }
+  }, [params, user, setParams]);
+
+  const requireAuth = () => {
+    if (!user) {
+      toast.info("Please sign in to request a booking.");
+      navigate(`/auth?redirect=${encodeURIComponent(`/professionals/${pro.id}?book=1`)}`);
+      return false;
+    }
+    return true;
+  };
 
   const conflicts = (date: string, start: string, end: string) =>
     busySlots.some((b) => b.event_date === date && start < b.end_time && end > b.start_time);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!requireAuth()) return;
     const fd = new FormData(e.currentTarget);
     const date = String(fd.get("date"));
     const start = String(fd.get("start"));
@@ -236,10 +258,9 @@ function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile;
     }
     setBusy(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase.from("bookings").insert({
         professional_id: pro.id,
-        client_id: user?.id ?? null,
+        client_id: user!.id,
         client_name: String(fd.get("name")),
         client_email: String(fd.get("email")),
         client_phone: String(fd.get("phone") ?? ""),
@@ -254,13 +275,6 @@ function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile;
         status: "pending",
       });
       if (error) throw error;
-      await supabase.from("notifications").insert({
-        user_id: pro.id,
-        type: "new",
-        title: "New booking request",
-        body: `${fd.get("name")} requested ${fd.get("event_name")} on ${date}.`,
-        link: "/dashboard/bookings",
-      });
       setOpen(false);
       toast.success("Booking request sent!", {
         action: { label: "Start chat", onClick: () => navigate(`/dashboard/messages?partner=${pro.id}`) },
@@ -273,16 +287,23 @@ function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile;
     }
   };
 
+  const onTriggerClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      requireAuth();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { if (o && !requireAuth()) return; setOpen(o); }}>
       <DialogTrigger asChild>
-        <Button size="lg" className={`bg-primary ${className ?? ""}`}>Request Booking</Button>
+        <Button size="lg" onClick={onTriggerClick} className={`bg-primary ${className ?? ""}`}>{user ? "Request Booking" : "Sign in to hire"}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader><DialogTitle>Request a booking with {pro.full_name}</DialogTitle></DialogHeader>
         <form onSubmit={onSubmit} className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Full name"><Input name="name" required placeholder="Jane Cooper" /></Field>
+            <Field label="Full name"><Input name="name" required defaultValue={profile?.full_name ?? ""} placeholder="Jane Cooper" /></Field>
             <Field label="Company"><Input name="company" placeholder="Acme Inc." /></Field>
             <Field label="Email"><Input name="email" required type="email" placeholder="you@company.com" /></Field>
             <Field label="Phone"><Input name="phone" placeholder="+1 555 0100" /></Field>
