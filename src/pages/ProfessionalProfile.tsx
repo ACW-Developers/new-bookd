@@ -36,12 +36,12 @@ export default function ProfessionalProfile() {
     enabled: !!id,
   });
 
-  if (isLoading) return <div className="grid min-h-screen place-items-center text-muted-foreground">Loading…</div>;
+  if (isLoading) return <div className="grid min-h-screen place-items-center text-black">Loading…</div>;
   if (!p) {
     return (
       <div className="grid min-h-screen place-items-center bg-background">
         <div className="text-center">
-          <p className="text-muted-foreground">Professional not found.</p>
+          <p className="text-black">Professional not found.</p>
           <Button asChild className="mt-4"><Link to="/search">Browse professionals</Link></Button>
         </div>
       </div>
@@ -54,22 +54,22 @@ export default function ProfessionalProfile() {
     <div className="min-h-screen bg-background">
       <SiteNav />
       <div className="mx-auto max-w-6xl px-6 py-8">
-        <Link to="/search" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <Link to="/search" className="inline-flex items-center gap-1.5 text-sm text-black hover:text-foreground">
           <ArrowLeft className="h-4 w-4" /> Back to search
         </Link>
 
         <div className="mt-6 overflow-hidden rounded-3xl border border-border bg-card shadow-[var(--shadow-soft)]">
-          <div className="h-32 gradient-navy" />
+          <div className="h-32 bg-primary" />
           <div className="px-6 pb-6 sm:px-8 sm:pb-8">
             <div className="-mt-12 flex flex-col gap-4 sm:flex-row sm:items-end">
               <UserAvatar src={p.avatar_url} name={p.full_name} seed={p.id} className="h-24 w-24 rounded-2xl text-2xl ring-4 ring-card shadow-[var(--shadow-elegant)]" />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-2xl lg:text-white font-bold tracking-tight">{p.full_name}</h1>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium text-success"><CheckCircle2 className="h-3 w-3" /> Verified</span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-success"><CheckCircle2 className="h-3 w-3" /> Verified</span>
                 </div>
-                <p className="text-muted-foreground ">{p.profession ?? "Professional"}{p.category ? ` · ${p.category}` : ""}</p>
-                <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                <p className="text-black ">{p.profession ?? "Professional"}{p.category ? ` · ${p.category}` : ""}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-4 text-sm text-black">
                   {p.location && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" /> {p.location}</span>}
                   <span className="flex items-center gap-1"><Star className="h-4 w-4 fill-warning text-warning" /> {Number(p.rating).toFixed(1)} ({p.reviews_count} reviews)</span>
                   {p.experience_years && <span className="flex items-center gap-1"><Briefcase className="h-4 w-4" /> {p.experience_years} years</span>}
@@ -84,7 +84,7 @@ export default function ProfessionalProfile() {
           <div className="lg:col-span-2 space-y-6">
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <h2 className="text-lg font-semibold">About</h2>
-              <p className="mt-2 text-muted-foreground">{p.bio ?? "No bio provided yet."}</p>
+              <p className="mt-2 text-black">{p.bio ?? "No bio provided yet."}</p>
               {(p.skills ?? []).length > 0 && (
                 <div className="mt-5">
                   <h3 className="text-sm font-semibold">Skills</h3>
@@ -102,7 +102,7 @@ export default function ProfessionalProfile() {
                   const rule = rules.find((r) => r.day_of_week === i);
                   const ok = enabledDays.has(i);
                   return (
-                    <div key={d} className={`rounded-xl border p-3 ${ok ? "border-success/30 bg-success/5" : "border-border bg-muted/30 text-muted-foreground"}`}>
+                    <div key={d} className={`rounded-xl border p-3 ${ok ? "border-success/30 bg-success/5" : "border-border bg-muted/30 text-black"}`}>
                       <p className="text-xs font-medium">{d}</p>
                       {ok && rule ? (
                         <p className="mt-1 text-[11px] text-success">{rule.start_time.slice(0, 5)}–{rule.end_time.slice(0, 5)}</p>
@@ -114,20 +114,20 @@ export default function ProfessionalProfile() {
                 })}
               </div>
               {rules.length === 0 && (
-                <p className="mt-4 text-sm text-muted-foreground">This professional hasn't set availability yet — send a request and they'll confirm a time.</p>
+                <p className="mt-4 text-sm text-black">This professional hasn't set availability yet - send a request and they'll confirm a time.</p>
               )}
             </section>
 
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Clock className="h-5 w-5 text-primary" /> Currently unavailable</h2>
               {busy.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No upcoming engagements - fully open for new bookings.</p>
+                <p className="text-sm text-black">No upcoming engagements - fully open for new bookings.</p>
               ) : (
                 <ul className="space-y-2">
                   {busy.map((b, i) => (
                     <li key={i} className="flex items-center justify-between rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
                       <span className="font-medium">{new Date(b.event_date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span>
-                      <span className="text-muted-foreground">{b.start_time.slice(0,5)}–{b.end_time.slice(0,5)}</span>
+                      <span className="text-black">{b.start_time.slice(0,5)}–{b.end_time.slice(0,5)}</span>
                       <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${b.status === "approved" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
                         {b.status === "approved" ? "Booked" : "Pending"}
                       </span>
@@ -140,21 +140,21 @@ export default function ProfessionalProfile() {
 
           <aside className="space-y-6">
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Starting from</p>
-              <p className="mt-1 text-3xl font-bold text-navy">{formatPrice(p.hourly_rate)}<span className="text-base font-normal text-muted-foreground">/hr</span></p>
+              <p className="text-xs uppercase tracking-wide text-black">Starting from</p>
+              <p className="mt-1 text-3xl font-bold text-navy">{formatPrice(p.hourly_rate)}<span className="text-base font-normal text-black">/hr</span></p>
               <BookingDialog pro={p} busy={busy} className="mt-4 w-full" />
               <Button asChild variant="outline" className="mt-2 w-full">
                 <Link to={`/dashboard/messages?partner=${p.id}`}><MessageSquare className="mr-2 h-4 w-4" /> Start chat</Link>
               </Button>
-              <p className="mt-3 text-center text-xs text-muted-foreground">Usually responds within 2 hours</p>
+              <p className="mt-3 text-center text-xs text-black">Usually responds within 2 hours</p>
             </section>
 
 
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <h3 className="text-sm font-semibold">Contact</h3>
               <div className="mt-3 space-y-2 text-sm">
-                {p.email && <a className="flex items-center gap-2 text-muted-foreground hover:text-foreground" href={`mailto:${p.email}`}><Mail className="h-4 w-4" /> {p.email}</a>}
-                {p.phone && <a className="flex items-center gap-2 text-muted-foreground hover:text-foreground" href={`tel:${p.phone}`}><Phone className="h-4 w-4" /> {p.phone}</a>}
+                {p.email && <a className="flex items-center gap-2 text-black hover:text-foreground" href={`mailto:${p.email}`}><Mail className="h-4 w-4" /> {p.email}</a>}
+                {p.phone && <a className="flex items-center gap-2 text-black hover:text-foreground" href={`tel:${p.phone}`}><Phone className="h-4 w-4" /> {p.phone}</a>}
               </div>
             </section>
           </aside>
@@ -228,7 +228,7 @@ function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile;
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className={`gradient-primary ${className ?? ""}`}>Request Booking</Button>
+        <Button size="lg" className={`bg-primary ${className ?? ""}`}>Request Booking</Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader><DialogTitle>Request a booking with {pro.full_name}</DialogTitle></DialogHeader>

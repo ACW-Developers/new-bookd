@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import authHero from "@/assets/auth-hero.jpg";
+import authHero from "@/assets/book4.png";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -76,12 +76,12 @@ export default function Auth() {
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden lg:block">
         <img src={authHero} alt="Professional" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-navy/30 via-primary/40 to-transparent" />
+        <div className="absolute inset-0 bg-transparent" />
         <div className="absolute inset-0 flex flex-col justify-between p-12 text-white">
-          <Logo className="[&_span]:text-white" />
+          <Logo />
           <div className="max-w-md">
             <h1 className="text-4xl font-bold leading-tight">Connect with Trusted Professionals</h1>
-            <p className="mt-3 text-white/85">
+            <p className="mt-3 text-white/95">
               Discover availability, request bookings, and manage engagements, all from one beautifully simple platform.
             </p>
           </div>
@@ -105,7 +105,7 @@ export default function Auth() {
                   key={t}
                   type="button"
                   onClick={() => setTab(t)}
-                  className={`rounded-lg py-2 text-sm font-medium transition-all ${
+                  className={`rounded-lg py-3 text-sm font-medium transition-all ${
                     tab === t ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
@@ -160,7 +160,7 @@ export default function Auth() {
                 </div>
               </FieldI>
 
-              <Button type="submit" disabled={busy} className="w-full gradient-primary" size="lg">
+              <Button type="submit" disabled={busy} className="w-full bg-primary" size="lg">
                 {busy ? "Please wait…" : tab === "signin" ? "Sign In" : "Create account"}
               </Button>
             </form>

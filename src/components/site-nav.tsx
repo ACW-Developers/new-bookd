@@ -9,13 +9,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export function SiteNav() {
   const { session } = useAuth();
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-primary/5 backdrop-blur-xl">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         <Logo />
         <nav className="hidden items-center gap-8 md:flex">
-          <Link to="/search" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Find Professionals</Link>
-          <a href="/#categories" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">Categories</a>
-          <a href="/#how" className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">How it works</a>
+          <Link to="/search" className="text-sm font-medium text-black transition-colors hover:text-foreground">Find Professionals</Link>
+          <a href="/#categories" className="text-sm font-medium text-black transition-colors hover:text-foreground">Categories</a>
+          <a href="/#how" className="text-sm font-medium text-black transition-colors hover:text-foreground">How it works</a>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
@@ -53,12 +53,12 @@ export function SiteNav() {
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-card/30">
+    <footer className="border-t border-border bg-primary/5">
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-8 md:grid-cols-4">
           <div>
             <Logo />
-            <p className="mt-3 max-w-xs text-sm text-muted-foreground">
+            <p className="mt-3 max-w-xs text-sm text-black">
               Book trusted professionals for any event, service, or engagement.
             </p>
           </div>
@@ -69,13 +69,13 @@ export function SiteFooter() {
           ].map((c) => (
             <div key={c.h}>
               <h4 className="text-sm font-semibold text-foreground">{c.h}</h4>
-              <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <ul className="mt-3 space-y-2 text-sm text-black">
                 {c.links.map((l) => <li key={l}><a href="#" className="hover:text-foreground">{l}</a></li>)}
               </ul>
             </div>
           ))}
         </div>
-        <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t border-border pt-6 text-sm text-muted-foreground sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-2 border-t  border-black/15 pt-6 text-sm text-black sm:flex-row">
           <p>© 2026 BOOKD. All rights reserved.</p>
           <p>Crafted with care for professionals worldwide.</p>
         </div>

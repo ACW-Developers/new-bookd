@@ -97,7 +97,7 @@ export function CategoriesCarousel() {
             </div>
             <div className="p-4">
               <p className="truncate font-semibold">{c.name}</p>
-              <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+              <p className="mt-1 flex items-center gap-1 text-xs text-black">
                 <Users className="h-3 w-3" /> {c.count} professional{c.count === 1 ? "" : "s"}
               </p>
             </div>
