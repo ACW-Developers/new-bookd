@@ -26,22 +26,26 @@ export default function Auth() {
   const [profession, setProfession] = useState("");
   const [isPro, setIsPro] = useState(true);
 
+  const redirectParam = params.get("redirect");
+
   const redirectFor = async (userId: string) => {
     const { data } = await supabase
       .from("user_roles")
       .select("role")
       .eq("user_id", userId);
     const userRoles = (data ?? []).map((r) => r.role as string);
-    if (userRoles.includes("admin")) navigate("/admin", { replace: true });
+    if (redirectParam) navigate(redirectParam, { replace: true });
+    else if (userRoles.includes("admin")) navigate("/admin", { replace: true });
     else navigate("/dashboard", { replace: true });
   };
 
   useEffect(() => {
     if (session?.user) {
-      if (isAdmin) navigate("/admin", { replace: true });
+      if (redirectParam) navigate(redirectParam, { replace: true });
+      else if (isAdmin) navigate("/admin", { replace: true });
       else if (roles.length > 0) navigate("/dashboard", { replace: true });
     }
-  }, [session, roles, isAdmin, navigate]);
+  }, [session, roles, isAdmin, navigate, redirectParam]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
