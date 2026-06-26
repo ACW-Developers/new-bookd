@@ -37,6 +37,52 @@ export default function ProfessionalProfile() {
     enabled: !!id,
   });
 
+  const { data: schedule = [] } = useQuery({
+    queryKey: ["pro-schedule", id],
+    queryFn: () => api.proSchedule(id),
+    enabled: !!id,
+  });
+
+  // Expand schedule entries (incl. repeating) into busy slots for next 30 days
+  const scheduleBusy = useMemo(() => {
+    const out: { event_date: string; start_time: string; end_time: string; status: string; label: string }[] = [];
+    const today = new Date(); today.setHours(0,0,0,0);
+    const horizon = new Date(today); horizon.setDate(horizon.getDate() + 30);
+    for (const s of schedule as any[]) {
+      if (!s.blocks_availability) continue;
+      const base = new Date(s.event_date + "T00:00:00");
+      const until = s.repeat_until ? new Date(s.repeat_until + "T00:00:00") : horizon;
+      const end = until < horizon ? until : horizon;
+      const push = (d: Date) => {
+        if (d < today) return;
+        out.push({
+          event_date: d.toISOString().slice(0, 10),
+          start_time: s.start_time,
+          end_time: s.end_time,
+          status: "schedule",
+          label: s.title || "Unavailable",
+        });
+      };
+      if (s.repeats === "none") {
+        push(base);
+      } else if (s.repeats === "daily") {
+        for (let d = new Date(Math.max(+base, +today)); d <= end; d.setDate(d.getDate() + 1)) push(new Date(d));
+      } else if (s.repeats === "weekly") {
+        for (let d = new Date(Math.max(+base, +today)); d <= end; d.setDate(d.getDate() + 7)) push(new Date(d));
+      } else if (s.repeats === "monthly") {
+        for (let d = new Date(Math.max(+base, +today)); d <= end; d.setMonth(d.getMonth() + 1)) push(new Date(d));
+      }
+    }
+    return out;
+  }, [schedule]);
+
+  const allBusy = useMemo(() => {
+    const bookingBusy = (busy as any[]).map((b) => ({ ...b, label: b.status === "approved" ? "Booked" : "Pending booking" }));
+    return [...bookingBusy, ...scheduleBusy].sort((a, b) =>
+      a.event_date === b.event_date ? a.start_time.localeCompare(b.start_time) : a.event_date.localeCompare(b.event_date),
+    );
+  }, [busy, scheduleBusy]);
+
   if (isLoading) return <div className="grid min-h-screen place-items-center text-black">Loading…</div>;
   if (!p) {
     return (
