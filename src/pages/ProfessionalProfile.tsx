@@ -122,7 +122,7 @@ export default function ProfessionalProfile() {
                   {p.experience_years && <span className="flex items-center gap-1"><Briefcase className="h-4 w-4" /> {p.experience_years} years</span>}
                 </div>
               </div>
-              <BookingDialog pro={p} busy={busy} />
+              <BookingDialog pro={p} busy={allBusy as any} />
             </div>
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function ProfessionalProfile() {
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <p className="text-xs uppercase tracking-wide text-black">Starting from</p>
               <p className="mt-1 text-3xl font-bold text-navy">{formatPrice(p.hourly_rate)}<span className="text-base font-normal text-black">/hr</span></p>
-              <BookingDialog pro={p} busy={busy} className="mt-4 w-full" />
+              <BookingDialog pro={p} busy={allBusy as any} className="mt-4 w-full" />
               <Button asChild variant="outline" className="mt-2 w-full">
                 <Link to={`/dashboard/messages?partner=${p.id}`}><MessageSquare className="mr-2 h-4 w-4" /> Start chat</Link>
               </Button>
