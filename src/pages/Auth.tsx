@@ -75,18 +75,28 @@ export default function Auth() {
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden lg:block">
-        <img src={authHero} alt="Professional" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-transparent" />
-        <div className="absolute inset-0 flex flex-col justify-between p-12 text-white">
-          <Logo />
-          <div className="max-w-md">
-            <h1 className="text-4xl font-bold leading-tight">Connect with Trusted Professionals</h1>
-            <p className="mt-3 text-white/95">
-              Discover availability, request bookings, and manage engagements, all from one beautifully simple platform.
-            </p>
-          </div>
-        </div>
-      </div>
+  <img
+    src={authHero}
+    alt="Professional"
+    className="h-full w-full object-cover"
+  />
+
+  {/* Bottom gradient overlay */}
+  <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(0,0,0,0.30),rgba(0,0,0,0.10),transparent_40%)]" />
+
+  <div className="absolute inset-0 flex flex-col justify-between p-12 text-white">
+    <Logo />
+    <div className="max-w-md">
+      <h1 className="text-4xl font-bold leading-tight">
+        Connect with Trusted Professionals
+      </h1>
+      <p className="mt-3 text-white">
+        Discover availability, request bookings, and manage engagements, all
+        from one beautifully simple platform.
+      </p>
+    </div>
+  </div>
+</div>
 
       <div className="flex items-center justify-center bg-background p-6 sm:p-12">
         <div className="w-full max-w-md">
