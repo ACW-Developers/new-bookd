@@ -1,6 +1,6 @@
-import { Link, useParams, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { MapPin, Star, Calendar, Mail, Phone, ArrowLeft, CheckCircle2, Briefcase, Clock, MessageSquare } from "lucide-react";
+import { Link, useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { MapPin, Star, Calendar, Mail, Phone, ArrowLeft, CheckCircle2, Briefcase, Clock, MessageSquare, Repeat } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { SiteNav, SiteFooter } from "@/components/site-nav";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { formatPrice } from "@/lib/currency";
 import type { Profile } from "@/lib/types";
 import { UserAvatar } from "@/components/user-avatar";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function ProfessionalProfile() {
   const { id = "" } = useParams<{ id: string }>();
@@ -35,6 +36,52 @@ export default function ProfessionalProfile() {
     queryFn: () => api.proBusySlots(id),
     enabled: !!id,
   });
+
+  const { data: schedule = [] } = useQuery({
+    queryKey: ["pro-schedule", id],
+    queryFn: () => api.proSchedule(id),
+    enabled: !!id,
+  });
+
+  // Expand schedule entries (incl. repeating) into busy slots for next 30 days
+  const scheduleBusy = useMemo(() => {
+    const out: { event_date: string; start_time: string; end_time: string; status: string; label: string }[] = [];
+    const today = new Date(); today.setHours(0,0,0,0);
+    const horizon = new Date(today); horizon.setDate(horizon.getDate() + 30);
+    for (const s of schedule as any[]) {
+      if (!s.blocks_availability) continue;
+      const base = new Date(s.event_date + "T00:00:00");
+      const until = s.repeat_until ? new Date(s.repeat_until + "T00:00:00") : horizon;
+      const end = until < horizon ? until : horizon;
+      const push = (d: Date) => {
+        if (d < today) return;
+        out.push({
+          event_date: d.toISOString().slice(0, 10),
+          start_time: s.start_time,
+          end_time: s.end_time,
+          status: "schedule",
+          label: s.title || "Unavailable",
+        });
+      };
+      if (s.repeats === "none") {
+        push(base);
+      } else if (s.repeats === "daily") {
+        for (let d = new Date(Math.max(+base, +today)); d <= end; d.setDate(d.getDate() + 1)) push(new Date(d));
+      } else if (s.repeats === "weekly") {
+        for (let d = new Date(Math.max(+base, +today)); d <= end; d.setDate(d.getDate() + 7)) push(new Date(d));
+      } else if (s.repeats === "monthly") {
+        for (let d = new Date(Math.max(+base, +today)); d <= end; d.setMonth(d.getMonth() + 1)) push(new Date(d));
+      }
+    }
+    return out;
+  }, [schedule]);
+
+  const allBusy = useMemo(() => {
+    const bookingBusy = (busy as any[]).map((b) => ({ ...b, label: b.status === "approved" ? "Booked" : "Pending booking" }));
+    return [...bookingBusy, ...scheduleBusy].sort((a, b) =>
+      a.event_date === b.event_date ? a.start_time.localeCompare(b.start_time) : a.event_date.localeCompare(b.event_date),
+    );
+  }, [busy, scheduleBusy]);
 
   if (isLoading) return <div className="grid min-h-screen place-items-center text-black">Loading…</div>;
   if (!p) {
@@ -75,7 +122,7 @@ export default function ProfessionalProfile() {
                   {p.experience_years && <span className="flex items-center gap-1"><Briefcase className="h-4 w-4" /> {p.experience_years} years</span>}
                 </div>
               </div>
-              <BookingDialog pro={p} busy={busy} />
+              <BookingDialog pro={p} busy={allBusy as any} />
             </div>
           </div>
         </div>
@@ -120,16 +167,17 @@ export default function ProfessionalProfile() {
 
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold"><Clock className="h-5 w-5 text-primary" /> Currently unavailable</h2>
-              {busy.length === 0 ? (
+              {allBusy.length === 0 ? (
                 <p className="text-sm text-black">No upcoming engagements - fully open for new bookings.</p>
               ) : (
                 <ul className="space-y-2">
-                  {busy.map((b, i) => (
-                    <li key={i} className="flex items-center justify-between rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
+                  {allBusy.slice(0, 20).map((b, i) => (
+                    <li key={i} className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm">
                       <span className="font-medium">{new Date(b.event_date).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span>
                       <span className="text-black">{b.start_time.slice(0,5)}–{b.end_time.slice(0,5)}</span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${b.status === "approved" ? "bg-destructive/15 text-destructive" : "bg-warning/15 text-warning"}`}>
-                        {b.status === "approved" ? "Booked" : "Pending"}
+                      <span className="truncate text-xs text-muted-foreground">{(b as any).label}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${b.status === "approved" ? "bg-destructive/15 text-destructive" : b.status === "schedule" ? "bg-primary/15 text-primary" : "bg-warning/15 text-warning"}`}>
+                        {b.status === "approved" ? "Booked" : b.status === "schedule" ? "Busy" : "Pending"}
                       </span>
                     </li>
                   ))}
@@ -142,7 +190,7 @@ export default function ProfessionalProfile() {
             <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-soft)]">
               <p className="text-xs uppercase tracking-wide text-black">Starting from</p>
               <p className="mt-1 text-3xl font-bold text-navy">{formatPrice(p.hourly_rate)}<span className="text-base font-normal text-black">/hr</span></p>
-              <BookingDialog pro={p} busy={busy} className="mt-4 w-full" />
+              <BookingDialog pro={p} busy={allBusy as any} className="mt-4 w-full" />
               <Button asChild variant="outline" className="mt-2 w-full">
                 <Link to={`/dashboard/messages?partner=${p.id}`}><MessageSquare className="mr-2 h-4 w-4" /> Start chat</Link>
               </Button>
@@ -170,14 +218,36 @@ type BusySlot = { event_date: string; start_time: string; end_time: string; stat
 
 function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile; className?: string; busy?: BusySlot[] }) {
   const navigate = useNavigate();
+  const { user, profile } = useAuth();
+  const [params, setParams] = useSearchParams();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+
+  // Auto-open after auth redirect
+  useEffect(() => {
+    if (params.get("book") === "1" && user) {
+      setOpen(true);
+      const next = new URLSearchParams(params);
+      next.delete("book");
+      setParams(next, { replace: true });
+    }
+  }, [params, user, setParams]);
+
+  const requireAuth = () => {
+    if (!user) {
+      toast.info("Please sign in to request a booking.");
+      navigate(`/auth?redirect=${encodeURIComponent(`/professionals/${pro.id}?book=1`)}`);
+      return false;
+    }
+    return true;
+  };
 
   const conflicts = (date: string, start: string, end: string) =>
     busySlots.some((b) => b.event_date === date && start < b.end_time && end > b.start_time);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!requireAuth()) return;
     const fd = new FormData(e.currentTarget);
     const date = String(fd.get("date"));
     const start = String(fd.get("start"));
@@ -188,10 +258,9 @@ function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile;
     }
     setBusy(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       const { error } = await supabase.from("bookings").insert({
         professional_id: pro.id,
-        client_id: user?.id ?? null,
+        client_id: user!.id,
         client_name: String(fd.get("name")),
         client_email: String(fd.get("email")),
         client_phone: String(fd.get("phone") ?? ""),
@@ -206,13 +275,6 @@ function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile;
         status: "pending",
       });
       if (error) throw error;
-      await supabase.from("notifications").insert({
-        user_id: pro.id,
-        type: "new",
-        title: "New booking request",
-        body: `${fd.get("name")} requested ${fd.get("event_name")} on ${date}.`,
-        link: "/dashboard/bookings",
-      });
       setOpen(false);
       toast.success("Booking request sent!", {
         action: { label: "Start chat", onClick: () => navigate(`/dashboard/messages?partner=${pro.id}`) },
@@ -225,16 +287,23 @@ function BookingDialog({ pro, className, busy: busySlots = [] }: { pro: Profile;
     }
   };
 
+  const onTriggerClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      requireAuth();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(o) => { if (o && !requireAuth()) return; setOpen(o); }}>
       <DialogTrigger asChild>
-        <Button size="lg" className={`bg-primary ${className ?? ""}`}>Request Booking</Button>
+        <Button size="lg" onClick={onTriggerClick} className={`bg-primary ${className ?? ""}`}>{user ? "Request Booking" : "Sign in to hire"}</Button>
       </DialogTrigger>
       <DialogContent className="max-w-xl">
         <DialogHeader><DialogTitle>Request a booking with {pro.full_name}</DialogTitle></DialogHeader>
         <form onSubmit={onSubmit} className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="Full name"><Input name="name" required placeholder="Jane Cooper" /></Field>
+            <Field label="Full name"><Input name="name" required defaultValue={profile?.full_name ?? ""} placeholder="Jane Cooper" /></Field>
             <Field label="Company"><Input name="company" placeholder="Acme Inc." /></Field>
             <Field label="Email"><Input name="email" required type="email" placeholder="you@company.com" /></Field>
             <Field label="Phone"><Input name="phone" placeholder="+1 555 0100" /></Field>

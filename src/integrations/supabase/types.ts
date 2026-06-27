@@ -349,6 +349,51 @@ export type Database = {
         }
         Relationships: []
       }
+      schedule_entries: {
+        Row: {
+          blocks_availability: boolean
+          created_at: string
+          end_time: string
+          event_date: string
+          id: string
+          notes: string | null
+          professional_id: string
+          repeat_until: string | null
+          repeats: string
+          start_time: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          blocks_availability?: boolean
+          created_at?: string
+          end_time: string
+          event_date: string
+          id?: string
+          notes?: string | null
+          professional_id: string
+          repeat_until?: string | null
+          repeats?: string
+          start_time: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          blocks_availability?: boolean
+          created_at?: string
+          end_time?: string
+          event_date?: string
+          id?: string
+          notes?: string | null
+          professional_id?: string
+          repeat_until?: string | null
+          repeats?: string
+          start_time?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

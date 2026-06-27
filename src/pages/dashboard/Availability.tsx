@@ -34,8 +34,10 @@ export default function AvailabilityPage() {
     const next: Record<number, Rule> = {};
     for (let i = 0; i < 7; i++) {
       const r = rules.find((x) => x.day_of_week === i);
+      const safeStart = typeof r?.start_time === "string" ? r.start_time.slice(0, 5) : "09:00";
+      const safeEnd = typeof r?.end_time === "string" ? r.end_time.slice(0, 5) : "17:00";
       next[i] = r
-        ? { enabled: r.enabled, start: r.start_time.slice(0, 5), end: r.end_time.slice(0, 5) }
+        ? { enabled: !!r.enabled, start: safeStart, end: safeEnd }
         : { enabled: i >= 1 && i <= 5, start: "09:00", end: "17:00" };
     }
     setState(next);

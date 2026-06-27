@@ -48,5 +48,15 @@ export const api = {
       .order("event_date", { ascending: true });
     return data ?? [];
   },
+  proSchedule: async (id: string) => {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data } = await supabase
+      .from("schedule_entries")
+      .select("*")
+      .eq("professional_id", id)
+      .or(`event_date.gte.${today},repeats.neq.none`);
+    return data ?? [];
+  },
 };
+
 
